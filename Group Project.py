@@ -1,7 +1,6 @@
-#TEST PROGRAM - CUTTING DOWN
+#TEST PROGRAM
 # import the necessary packages
 from __future__ import print_function
-#from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import DBSCAN
 import matplotlib.pyplot as plt
 from imutils.object_detection import non_max_suppression
@@ -23,7 +22,8 @@ class PeopleTracker:
     center = []
     recCount = 0
     pick = 0
-    i = 0
+    #          Red       Yellow      Blue      Green     Purple 
+    colors = [(255,0,0),(255,255,0),(0,0,255),(0,128,0),(128,0,128)]
 
     def BBoxes(self, frame):
         #frame = imutils.resize(frame, width = min(frame.shape[0], frame.shape[1]))
@@ -69,16 +69,16 @@ class PeopleTracker:
         # Number of clusters in labels, ignoring noise if present.
         n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
         n_noise_ = list(labels).count(-1)
-        print("Labels: ", labels)
+        #print("Labels: ", labels)
         # Black removed and is used for noise instead.
         unique_labels = set(labels)
-        #print("Unique Labels: ", unique_labels)
+        print("Unique Labels: ", unique_labels)
         
-        colors = plt.cm.rainbow(np.linspace(0, 255, len(unique_labels)))
+        #colors = plt.cm.rainbow(np.linspace(0, 255, len(unique_labels)))
 
         #colors = [(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)) for k in range(len(unique_labels)) ]
         
-        print(colors)
+        #print(self.colors)
         
         i = 0
         
@@ -90,7 +90,7 @@ class PeopleTracker:
             else:
               
                 #cv2.rectangle(frame, (xA, yA), (xB, yB), (r, g, b), 2)
-                cv2.rectangle(frame, (xA, yA), (xB, yB), (colors[labels[i]][0] * 255, colors[labels[i]][1] * 255, colors[labels[i]][2] * 255), 2)
+                cv2.rectangle(frame, (xA, yA), (xB, yB), (self.colors[labels[i]][0], self.colors[labels[i]][1], self.colors[labels[i]][2]), 2)
                 i += 1
         
         
