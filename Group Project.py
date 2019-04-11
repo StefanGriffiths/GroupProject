@@ -26,11 +26,11 @@ class PeopleTracker:
     colors = [(255,0,0),(255,255,0),(0,0,255),(0,128,0),(128,0,128)]
 
     def BBoxes(self, frame):
-        #frame = imutils.resize(frame, width = min(frame.shape[0], frame.shape[1]))
-        frame = imutils.resize(frame, width= 1000,height = 1100)
+        frame = imutils.resize(frame, width = min(frame.shape[0], frame.shape[1]))
+        #frame = imutils.resize(frame, width= 1000,height = 1000)
 
         # detect people in the image
-        (rects, weights) = self.hog.detectMultiScale(frame, winStride=(2,2), padding=(1, 1), scale=0.5)
+        (rects, weights) = self.hog.detectMultiScale(frame, winStride=(1,1), padding=(3, 3), scale=0.1, useMeanshiftGrouping=0)
         
         # apply non-maxima suppression to the bounding boxes using a
         # fairly large overlap threshold to try to maintain overlapping
@@ -38,7 +38,7 @@ class PeopleTracker:
         
         rects = np.array([[x, y, x + w, y + h] for (x, y, w, h) in rects])
         
-        self.pick = non_max_suppression(rects, probs=None, overlapThresh=0.65)
+        self.pick = non_max_suppression(rects, probs=None, overlapThresh=0.7)
 
         # draw the final bounding boxes
         self.recCount  = 0
@@ -72,7 +72,7 @@ class PeopleTracker:
         #print("Labels: ", labels)
         # Black removed and is used for noise instead.
         unique_labels = set(labels)
-        print("Unique Labels: ", unique_labels)
+        #print("Unique Labels: ", unique_labels)
         
         #colors = plt.cm.rainbow(np.linspace(0, 255, len(unique_labels)))
 
@@ -135,14 +135,14 @@ def main():
             #plt.title('Estimated number of clusters: %d' % n_clusters_)
             #plt.show()   
             cv2.imshow("Tracker", frame)
-            cv2.waitKey(0)
+            cv2.waitKey(1)
             #cv2.destroyAllWindows()
             PT.count = PT.count - 1
 
         else:
             
             cv2.imshow("Tracker", frame)
-            cv2.waitKey(0)
+            cv2.waitKey(1)
             #cv2.destroyAllWindows()
             PT.count = PT.count - 1
 
