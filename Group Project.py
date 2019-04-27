@@ -1,18 +1,12 @@
 #TEST PROGRAM
 # import the necessary packages
-from __future__ import print_function
 from sklearn.cluster import DBSCAN
-import matplotlib.pyplot as plt
-from imutils.object_detection import non_max_suppression
-from imutils import paths
-import numpy as np
 import imutils
+from imutils.object_detection import non_max_suppression
+import numpy as np
 import cv2
-import sys
-import matplotlib.pyplot as plt
-from itertools import cycle
-import random
 
+#import matplotlib.pyplot as plt
 
 class PeopleTracker:
 
@@ -27,10 +21,10 @@ class PeopleTracker:
 
     def BBoxes(self, frame):
         frame = imutils.resize(frame, width = min(frame.shape[0], frame.shape[1]))
-        #frame = imutils.resize(frame, width= 1000,height = 1000)
+        #frame = imutils.resize(frame, width= 800,height = 800)
 
         # detect people in the image
-        (rects, weights) = self.hog.detectMultiScale(frame, winStride=(1,1), padding=(3, 3), scale=0.1, useMeanshiftGrouping=0)
+        (rects, weights) = self.hog.detectMultiScale(frame, winStride=(2,2), padding=(16, 16), scale=0.3)
         
         # apply non-maxima suppression to the bounding boxes using a
         # fairly large overlap threshold to try to maintain overlapping
@@ -38,18 +32,17 @@ class PeopleTracker:
         
         rects = np.array([[x, y, x + w, y + h] for (x, y, w, h) in rects])
         
-        self.pick = non_max_suppression(rects, probs=None, overlapThresh=0.7)
+        self.pick = non_max_suppression(rects, probs=None, overlapThresh=0.9)
 
         # draw the final bounding boxes
         self.recCount  = 0
         
         for (xA, yA, xB, yB) in self.pick:
           
-            #cv2.rectangle(frame, (xA, yA), (xB, yB), (0, 255, 0), 2)
             
             CentxPos = int((xA + xB)/2)
             CentyPos = int((yA + yB)/2)
-        
+            
             cv2.circle(frame,(CentxPos, CentyPos), 5, (0,255,0), -1)
             self.recCount += 1
             
@@ -62,7 +55,7 @@ class PeopleTracker:
 
     def Clustering(self, frame):
         
-        db = DBSCAN(eps= 70, min_samples = 2).fit(self.center)
+        db = DBSCAN(eps= 70, min_samples = 3, n_jobs = -1).fit(self.center)
         
         labels = db.labels_
         
@@ -89,7 +82,6 @@ class PeopleTracker:
                 i += 1
             else:
               
-                #cv2.rectangle(frame, (xA, yA), (xB, yB), (r, g, b), 2)
                 cv2.rectangle(frame, (xA, yA), (xB, yB), (self.colors[labels[i]][0], self.colors[labels[i]][1], self.colors[labels[i]][2]), 2)
                 i += 1
         
@@ -118,8 +110,8 @@ def main():
 
     PT = PeopleTracker()
     PT.hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
-
-    while PT.count > 1:
+    
+    while PT.count > 2:
 
         PT.center = []
 
@@ -132,19 +124,13 @@ def main():
             PT.Clustering(frame)
             
 
-            #plt.title('Estimated number of clusters: %d' % n_clusters_)
-            #plt.show()   
-            cv2.imshow("Tracker", frame)
-            cv2.waitKey(1)
-            #cv2.destroyAllWindows()
-            PT.count = PT.count - 1
+        #plt.title('Estimated number of clusters: %d' % n_clusters_)
+        #plt.show()   
+        cv2.imshow("Tracker", frame)
+        cv2.waitKey(1)
+        #cv2.destroyAllWindows()
+        PT.count = PT.count - 1
 
-        else:
-            
-            cv2.imshow("Tracker", frame)
-            cv2.waitKey(1)
-            #cv2.destroyAllWindows()
-            PT.count = PT.count - 1
 
 cv2.destroyAllWindows()
 
