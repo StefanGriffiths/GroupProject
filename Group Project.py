@@ -21,10 +21,10 @@ class PeopleTracker:
 
     def BBoxes(self, frame):
         frame = imutils.resize(frame, width = min(frame.shape[0], frame.shape[1]))
-        #frame = imutils.resize(frame, width= 800,height = 800)
+        #rame = imutils.resize(frame, width= 900,height = 900)
 
         # detect people in the image
-        (rects, weights) = self.hog.detectMultiScale(frame, winStride=(2,2), padding=(16, 16), scale=0.3)
+        (rects, weights) = self.hog.detectMultiScale(frame, winStride=(2,2), padding=(22, 22), scale=0.9)
         
         # apply non-maxima suppression to the bounding boxes using a
         # fairly large overlap threshold to try to maintain overlapping
@@ -32,7 +32,7 @@ class PeopleTracker:
         
         rects = np.array([[x, y, x + w, y + h] for (x, y, w, h) in rects])
         
-        self.pick = non_max_suppression(rects, probs=None, overlapThresh=0.9)
+        self.pick = non_max_suppression(rects, probs=None, overlapThresh=0.6)
 
         # draw the final bounding boxes
         self.recCount  = 0
