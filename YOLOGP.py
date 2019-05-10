@@ -9,8 +9,7 @@ import msvcrt
 import os
 import pyrebase
 
-config =
-{
+config ={
   "apiKey": "AIzaSyDTfUqSEijy-UPrh6ab7VsRemlb87hr3tI",
   "authDomain": "groupproject-d2abd.firebaseapp.com",
   "databaseURL": "https://groupproject-d2abd.firebaseio.com",
@@ -20,17 +19,15 @@ config =
 firebase = pyrebase.initialize_app(config)
 
 caps = cv2.VideoCapture(r'C:/Users/Emyr/Documents/Jupyter/pedestrian-detection/video/Ped4.MOV')
-count = int(caps.get(cv2.CAP_PROP_FRAME_COUNT))
-
+countMax = int(caps.get(cv2.CAP_PROP_FRAME_COUNT))
+count = 0
 recCount = 0
 
 #          Red       Yellow      Blue      Green     Purple      Orange
 colors = [(255,0,0),(255,255,0),(0,0,255),(0,128,0),(128,0,128),(255,99,71)]
 
-while count > 2:
-
+while count < countMax - 1:
         
-        KeyboardInterrupt
         recCount = 0
         start = time.time()
         center = []
@@ -44,8 +41,6 @@ while count > 2:
         
         #print(frame.shape[0])
         #print(frame.shape[1])
-        labelsPath = "C:\Users\Emyr\Documents\Jupyter\pedestrian-detection\yolo-coco\coco.names"
-        LABELS = open(labelsPath).read().strip().split("\n")
 
         # derive the paths to the YOLO weights and model configuration
         weightsPath = "C:\Users\Emyr\Documents\Jupyter\pedestrian-detection\yolo-coco\yolov3.weights"
@@ -57,13 +52,21 @@ while count > 2:
 
         # load our YOLO object detector trained on COCO dataset (80 classes)
         net = cv2.dnn.readNetFromDarknet(configPath, weightsPath)
-        
+
+        net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
+        net.setPreferableTarget(cv2.dnn.DNN_TARGET_OPENCL)
+        # load our input image and grab its spatial dimensions
         (H, W) = frame.shape[:2]
 
+        # determine only the *output* layer names that we need from YOLO
         layerNames = net.getLayerNames()
         layerNames = [layerNames[i[0] - 1] for i in net.getUnconnectedOutLayers()]
-
+        
+        # construct a blob from the input image and then perform a forward
+        # pass of the YOLO object detector, giving us our bounding boxes and
+        # associated probabilities
         blob = cv2.dnn.blobFromImage(frame, 1 / 255.0, (416, 416), swapRB=True, crop=False)
+
         net.setInput(blob)
         
         layerOutputs = net.forward(layerNames)
@@ -79,9 +82,12 @@ while count > 2:
                         # extract the class ID and confidence (i.e., probability) of
                         # the current object detection
                         scores = detection[5:]
+                        #print(scores)
+                        #returns index of highest score
                         classID = np.argmax(scores)
+                        #print(classID)
                         confidence = scores[classID]
-
+                        #print(confidence)
                         # filter out weak predictions by ensuring the detected
                         # probability is greater than the minimum probability
                         if confidence > inpConfidence:
@@ -90,6 +96,7 @@ while count > 2:
                                 # returns the center (x, y)-coordinates of the bounding
                                 # box followed by the boxes' width and height
                                 box = detection[0:4] * np.array([W, H, W, H])
+                        
                                 (centerX, centerY, width, height) = box.astype("int")
 
                                 # use the center (x, y)-coordinates to derive the top and
@@ -103,10 +110,6 @@ while count > 2:
                                 boxes.append([x, y, int(width), int(height)])
                                 confidences.append(float(confidence))
                                 classIDs.append(classID)
-                                
-                                print("X", centerX)
-                                print("Y", centerY)
-                                
                                 center.append([centerX, centerY])
                                     
                                 cv2.circle(frame,(centerX, centerY), 5, (0,255,0), -1)
@@ -153,13 +156,13 @@ while count > 2:
             
             center = np.asarray(center)
 
-        print('Estimated number of clusters: %d' % n_clusters_)
+        #print('Estimated number of clusters: %d' % n_clusters_)
         #plt.show()
         end = time.time()
         print("[INFO] YOLO took {:.6f} seconds".format(end - start))
         cv2.imshow("Tracker", frame)
         cv2.waitKey(1)
-        count = count - 1
+        count +=1
         
 
 caps.close()
